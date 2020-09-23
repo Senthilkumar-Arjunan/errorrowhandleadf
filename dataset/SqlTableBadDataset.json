@@ -1,0 +1,39 @@
+{
+	"name": "SqlTableBadDataset",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "SQLDBLinkedService",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "salDate",
+				"type": "varchar"
+			},
+			{
+				"name": "salesItem",
+				"type": "varchar"
+			},
+			{
+				"name": "country",
+				"type": "varchar"
+			},
+			{
+				"name": "quantity",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "fileName",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "tbl_slaes_bad"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,39 @@
+{
+	"name": "SqlTableDataset",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "SQLDBLinkedService",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "salDate",
+				"type": "date"
+			},
+			{
+				"name": "salesItem",
+				"type": "varchar"
+			},
+			{
+				"name": "country",
+				"type": "varchar"
+			},
+			{
+				"name": "quantity",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "fileName",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "tbl_slaes"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
