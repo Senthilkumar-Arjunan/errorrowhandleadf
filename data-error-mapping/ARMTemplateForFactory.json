@@ -1,0 +1,294 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "data-error-mapping"
+		},
+		"linkedserviceBlob_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'linkedserviceBlob'"
+		},
+		"AzureSqlDatabaseLinkedService_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureSqlDatabaseLinkedService'"
+		},
+		"SQLDBLinkedService_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'SQLDBLinkedService'"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/DemoErrorRowsPipeine')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "ErrorRowsHandledataflow",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "ErrorRowsHandledataflow",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SalesInd": {},
+									"sink1": {},
+									"sink2": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							}
+						}
+					}
+				],
+				"annotations": [],
+				"lastPublishTime": "2020-09-23T08:23:08Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/ErrorRowsHandledataflow')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SqlTableDataset')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "SQLDBLinkedService",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "salDate",
+						"type": "date"
+					},
+					{
+						"name": "salesItem",
+						"type": "varchar"
+					},
+					{
+						"name": "country",
+						"type": "varchar"
+					},
+					{
+						"name": "quantity",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "fileName",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "tbl_slaes"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/SQLDBLinkedService')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SqlTableBadDataset')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "SQLDBLinkedService",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "salDate",
+						"type": "varchar"
+					},
+					{
+						"name": "salesItem",
+						"type": "varchar"
+					},
+					{
+						"name": "country",
+						"type": "varchar"
+					},
+					{
+						"name": "quantity",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "fileName",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "tbl_slaes_bad"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/SQLDBLinkedService')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SalesIndDataset')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "linkedserviceBlob",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "SalesIND_2020_MAY_01.csv",
+						"container": "global-sales"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "saleDate",
+						"type": "String"
+					},
+					{
+						"name": "salesItem",
+						"type": "String"
+					},
+					{
+						"name": "country",
+						"type": "String"
+					},
+					{
+						"name": "quanity",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/linkedserviceBlob')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/linkedserviceBlob')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('linkedserviceBlob_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureSqlDatabaseLinkedService')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureSqlDatabaseLinkedService_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SQLDBLinkedService')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('SQLDBLinkedService_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ErrorRowsHandledataflow')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "SalesIndDataset",
+								"type": "DatasetReference"
+							},
+							"name": "SalesInd"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "SqlTableBadDataset",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						},
+						{
+							"dataset": {
+								"referenceName": "SqlTableDataset",
+								"type": "DatasetReference"
+							},
+							"name": "sink2"
+						}
+					],
+					"transformations": [
+						{
+							"name": "ConditionalSplit1"
+						},
+						{
+							"name": "fileNamecolumnforErrorRows"
+						},
+						{
+							"name": "fileNameColGoodRow"
+						}
+					],
+					"script": "source(output(\n\t\tsaleDate as string,\n\t\tsalesItem as string,\n\t\tcountry as string,\n\t\tquanity as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> SalesInd\nSalesInd split(isNull(toDate(saleDate,'dd-MMM-yyyy')),\n\tdisjoint: false) ~> ConditionalSplit1@(ErrorRows, GoodRows)\nConditionalSplit1@ErrorRows derive(fileName = 'SalesIND_2020_MAY_01.csv') ~> fileNamecolumnforErrorRows\nConditionalSplit1@GoodRows derive(fileName = 'SalesIND_2020_MAY_01.csv',\n\t\tsaleDate = toDate(saleDate, 'dd-MMM-yyyy'),\n\t\tquanity = toInteger(quanity)) ~> fileNameColGoodRow\nfileNamecolumnforErrorRows sink(input(\n\t\tsalDate as string,\n\t\tsalesItem as string,\n\t\tcountry as string,\n\t\tquantity as integer,\n\t\tfileName as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tmapColumn(\n\t\tsalDate = saleDate,\n\t\tsalesItem,\n\t\tcountry,\n\t\tquantity = quanity,\n\t\tfileName\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1\nfileNameColGoodRow sink(input(\n\t\tsalDate as date,\n\t\tsalesItem as string,\n\t\tcountry as string,\n\t\tquantity as integer,\n\t\tfileName as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tmapColumn(\n\t\tsalDate = saleDate,\n\t\tsalesItem,\n\t\tcountry,\n\t\tquantity = quanity,\n\t\tfileName\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink2"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SalesIndDataset')]",
+				"[concat(variables('factoryId'), '/datasets/SqlTableBadDataset')]",
+				"[concat(variables('factoryId'), '/datasets/SqlTableDataset')]"
+			]
+		}
+	]
+}
